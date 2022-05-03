@@ -1,34 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Image } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { ScrollView } from 'react-native-gesture-handler';
-import { connect } from 'react-redux';
-import { mapStateToProps } from '../store/mapsToProps';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
-class Asset extends React.Component {
+export default function Asset() {
 
-    constructor(props) {
-        super(props);
+    const route = useRoute();
+    const dispatch = useDispatch();
+    const assets = useSelector(state => state.favorites);
+    const navigation = useNavigation();
 
-        this.add_to_favorites = this.add_to_favorites.bind(this);
+    const add_to_favorites = item => dispatch({ type: "ADD_FAVORITE", payload: item });
+    function remove_from_favorites() {
+        const items = assets.filter(asset => asset.id !== route.params.item.id);
+        dispatch({ type: "SET_FAVORITES", payload: items });
     }
 
-    componentDidMount() {
-        this.props.navigation.setOptions({ title: this.props.route.params.item.title });
-    }
-
-    add_to_favorites() {
-        this.props.dispatch({ type: 'ADD_FAVORITE', payload: this.props.route.params.item });
-    }
-
-    remove_from_favorites() {
-        const array = this.props.favorites.filter(asset => asset.id !== this.props.route.params.item.id);
-        this.props.dispatch({ type: 'SET_FAVORITES', payload: array });
-    }
-
-    filter_favorites(favorite) {
-        for (let i in this.props.favorites) {
-            if (this.props.favorites[i] === favorite) {
+    function filter_favorites(favorite) {
+        for (let i in assets) {
+            if (assets[i] === favorite) {
                 return true;
             } else {
                 return false;
@@ -36,39 +28,41 @@ class Asset extends React.Component {
         }
     }
 
-    render() {
-        return (
-            <ScrollView>
-                <StatusBar backgroundColor="white" barStyle="dark-content" />
+    useEffect(() => {
+        navigation.setOptions({ title: route.params.item.title });
+    })
+    return (
+        <ScrollView>
+            <StatusBar backgroundColor="white" barStyle="dark-content" />
 
-                <View style={styles.image_container}>
-                    <Image source={require('./../../assets/icon.png')} style={styles.image_profile} />
-                </View>
+            <View style={styles.image_container}>
+                <Image source={require('./../../assets/icon.png')} style={styles.image_profile} />
+            </View>
 
-                {!this.filter_favorites(this.props.route.params.item) ?
-                    <TouchableOpacity
-                        onPress={() => this.add_to_favorites()}>
-                        <Text style={styles.favorites}>ADD TO FAVORITES</Text>
-                    </TouchableOpacity>
-                    :
-                    <TouchableOpacity
-                        onPress={() => this.remove_from_favorites()}>
-                        <Text style={styles.favorites}>REMOVE FROM FAVORITES</Text>
-                    </TouchableOpacity>
-                }
+            {!filter_favorites(route.params.item) ?
+                <TouchableOpacity
+                    onPress={() => add_to_favorites(route.params.item)}
+                >
+                    <Text style={styles.favorites}>ADD TO FAVORITES</Text>
+                </TouchableOpacity>
+                :
+                <TouchableOpacity
+                    onPress={() => remove_from_favorites(route.params.item)}
+                >
+                    <Text style={styles.favorites}>REMOVE FROM FAVORITES</Text>
+                </TouchableOpacity>}
 
-
-                <View style={styles.texts}>
-                    <Text style={styles.title}>{this.props.route.params.item.title}</Text>
-                    <Text style={styles.description}>{this.props.route.params.item.description}</Text>
-                </View>
-                <View style={styles.description_view}>
-                    <Ionicons name='location' size={20} color='gray' />
-                    <Text style={styles.location}>{this.props.route.params.item.location}</Text>
-                </View>
-            </ScrollView>
-        )
-    }
+            <View style={styles.texts}>
+                <Text style={styles.title}>{route.params.item.title}</Text>
+                <Text style={styles.description}>{route.params.item.description}</Text>
+            </View>
+            <View style={styles.description_view}>
+                <Ionicons name='location' size={20} color='gray' />
+                <Text style={styles.location}>{route.params.item.location}</Text>
+            </View>
+        </ScrollView>
+    )
+    // }
 }
 
 const styles = StyleSheet.create({
@@ -111,4 +105,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default connect(mapStateToProps)(Asset);
+// export default connect(mapStateToProps)(Asset);
