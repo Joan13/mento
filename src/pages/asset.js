@@ -22,10 +22,10 @@ export default function Asset() {
         for (let i in assets) {
             if (assets[i] === favorite) {
                 return true;
-            } else {
-                return false;
             }
         }
+
+        return false;
     }
 
     useEffect(() => {
